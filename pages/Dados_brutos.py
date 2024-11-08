@@ -7,7 +7,22 @@ st.title('DADOS BRUTOS')
 url = 'https://labdados.com/produtos'
 
 response = requests.get(url)
-dados = pd.DataFrame.from_dict(response.json())
+
+# dados = pd.DataFrame.from_dict(response.json())
+
+# Verificar o status da resposta
+if response.status_code != 200:
+    st.error(f"Erro ao acessar a API: {response.status_code}")
+    st.stop()
+
+# Verificar se a resposta é JSON
+try:
+    dados = pd.DataFrame.from_dict(response.json())
+except ValueError:
+    st.error("Erro ao decodificar o JSON. Verifique o formato da resposta.")
+    st.write(response.text)  # Mostrar o conteúdo da resposta para debug
+    st.stop()
+
 dados['Data da Compra'] = pd.to_datetime(dados['Data da Compra'], format = '%d/%m/%Y')
 
 with st.expander("Colunas"):
@@ -44,5 +59,14 @@ with st.sidebar.expander('Tipo de pagamento'):
 with st.sidebar.expander('Quantidade de parcelas'):
     qtd_parcelas = st.slider('Selecione a quantidade de parcelas', 1, 24, (1,24))
     
+query = """
+    Produto in @produtos and \
+        @preco[0] <= Preço <= @preco[1] and \
+            @data_compra[0] <= `Data da Compra` <= @data_compra[1]
+"""
+dados_filtrados = dados.query(query)
+dados_filtrados = dados_filtrados[colunas]
 
-st.dataframe(dados)
+st.dataframe(dados_filtrados)
+
+st.markdown(f"A Tabela possui :blue[{dados_filtrados.shape[0]}] linhas e :blue[{dados_filtrados.shape[1]}] colunas.")
