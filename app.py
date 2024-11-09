@@ -12,9 +12,6 @@ Bem-vindo ao **Aplicativo de Vendas**! A plataforma para você explorar e visual
 Com esta ferramenta, você pode tomar decisões mais informadas com base nas análises de desempenho, segmentação de mercado e muito mais.
 """)
 
-# Inserir imagem (opcional)
-st.image("https://www.example.com/imagem-do-app.png", width=600)  # Substitua pela URL da imagem do seu app
-
 # Seção de navegação
 st.markdown("## Navegação")
 st.markdown("""
@@ -24,8 +21,6 @@ Escolha uma das seções abaixo para explorar os dados de vendas:
   - Visualize gráficos e métricas de vendas.
 - **Dados Brutos**
   - Acesse e filtre os dados brutos das vendas.
-- **Sobre**
-  - Informações sobre o aplicativo e a tecnologia por trás dele.
 """)
 
 # Seção de explicação
