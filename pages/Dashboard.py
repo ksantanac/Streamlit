@@ -12,6 +12,7 @@ def  format_number(value, prefix=""):
     
     return f"{prefix} {value:.2f} milhões"
 
+st.set_page_config(page_title="DASHBOARD DE VENDAS", layout="wide")
 st.title("DASHBOARD DE VENDAS :shopping_trolley:")
 
 url = "https://labdados.com/produtos"
@@ -35,7 +36,20 @@ query_string = {
 }
 
 response = requests.get(url, params=query_string)
-dados = pd.DataFrame.from_dict(response.json())
+
+# Verificar o status da resposta
+if response.status_code != 200:
+    st.error(f"Erro ao acessar a API: {response.status_code}")
+    st.stop()
+
+# Verificar se a resposta é JSON
+try:
+    dados = pd.DataFrame.from_dict(response.json())
+except ValueError:
+    st.error("Erro ao decodificar o JSON. Verifique o formato da resposta.")
+    st.write(response.text)  # Mostrar o conteúdo da resposta para debug
+    st.stop()
+
 dados["Data da Compra"] = pd.to_datetime(dados["Data da Compra"], format="%d/%m/%Y")
 
 filtro_vendedores = st.sidebar.multiselect("Vendedores", dados["Vendedor"].unique())
