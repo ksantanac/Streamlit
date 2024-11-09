@@ -1,7 +1,29 @@
 import streamlit as st
 import requests
 import pandas as pd
+import time
 
+@st.cache_data
+def converte_csv(df):
+    return df.to_csv(index=False).encode("utf-8")
+
+def succes_mesage():
+    # A barra de progresso aparece depois de clicar no botão de download
+    progress_text = "Download in progress. Please, wait..."
+    my_bar = st.progress(0, text=progress_text)
+
+    for percent_complete in range(100):
+        time.sleep(0.01)
+        my_bar.progress(percent_complete + 1, text=progress_text)
+    time.sleep(1)
+    my_bar.empty()
+    
+    sucesso = st.success("Download feito com sucesso!", icon="✅")
+    time.sleep(5)
+    sucesso.empty()
+    
+# st.set_page_config(page_title="Aplicativo de Vendas", layout="wide", page_icon=":shopping_cart:")
+st.set_page_config(page_title="DADOS BRUTOS", layout="wide")
 st.title('DADOS BRUTOS')
 
 url = 'https://labdados.com/produtos'
@@ -64,9 +86,33 @@ query = """
         @preco[0] <= Preço <= @preco[1] and \
             @data_compra[0] <= `Data da Compra` <= @data_compra[1]
 """
+
+query = '''
+Produto in @produtos and \
+    `Categoria do Produto` in @categoria and \
+        @preco[0] <= Preço <= @preco[1] and \
+            @frete[0] <= Frete <= @frete[1] and \
+                @data_compra[0] <= `Data da Compra` <= @data_compra[1] and \
+                    Vendedor in @vendedores and \
+                        `Local da compra` in @local_compra and \
+                            @avaliacao[0]<= `Avaliação da compra` <= @avaliacao[1] and \
+                                `Tipo de pagamento` in @tipo_pagamento and \
+                                    @qtd_parcelas[0] <= `Quantidade de parcelas` <= @qtd_parcelas[1]
+'''
+
 dados_filtrados = dados.query(query)
 dados_filtrados = dados_filtrados[colunas]
 
 st.dataframe(dados_filtrados)
 
 st.markdown(f"A Tabela possui :blue[{dados_filtrados.shape[0]}] linhas e :blue[{dados_filtrados.shape[1]}] colunas.")
+
+st.markdown("Escreva um nome para o arquivo")
+
+col1, col2 = st.columns(2)
+with col1:
+    nome_arquivo = st.text_input("", label_visibility='collapsed', value="dados")
+    nome_arquivo += ".csv"
+    
+with col2:
+    st.download_button("Download", data=converte_csv(dados_filtrados), file_name=nome_arquivo, mime="text/csv", on_click=succes_mesage)
